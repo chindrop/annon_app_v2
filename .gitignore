@@ -1,0 +1,9 @@
+venv/*
+.vscode/*
+__pycache__/
+.pytest_cache/
+junit/
+*.pyc
+.DS_Store
+**/subsample_wavs/
+.idea/*
