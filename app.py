@@ -134,7 +134,7 @@ def login_submit():
 
 def read_audio(random_file):
     raw = wave.open(
-        "/home/chinlee5/annon_app_v2/static/subsample_wavs/" + random_file, "r")
+        "static/subsample_wavs/" + random_file, "r")
     # Extract Raw Audio from Wav File
     signal = raw.readframes(-1)
     signal = np.frombuffer(signal, dtype="int16")
@@ -155,7 +155,7 @@ def plot_waveform(signal, f_rate):
     plt.title("Sound Wave")
     ax.set_xlabel("Time (s)")
     ax.plot(time, signal)
-    fig.savefig('/home/chinlee5/annon_app_v2/static/images/new_plot.png')
+    fig.savefig('static/images/new_plot.png')
 
 
 def plot_spectrogram(signal, f_rate):
@@ -167,7 +167,7 @@ def plot_spectrogram(signal, f_rate):
     fig, ax = plt.subplots()
     ax.set_xlabel("Time (s)")
     ax.specgram(signal, Fs=f_rate)
-    fig.savefig('/home/chinlee5/annon_app_v2/static/specto/new_plot.png')
+    fig.savefig('static/specto/new_plot.png')
 
 
 
@@ -178,7 +178,7 @@ def plot_spectrogram(signal, f_rate):
 
 @app.route("/annontate_page")
 def annontate_page():
-    random_file = random.choice(os.listdir("/home/chinlee5/annon_app_v2/static/subsample_wavs"))
+    random_file = random.choice(os.listdir("static/subsample_wavs"))
     read_audio(random_file)
     return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
 
@@ -192,7 +192,7 @@ def logout():
 @app.route("/anwser_yes")
 def anwser_yes():
     random_file = random.choice(os.listdir(
-        "/home/chinlee5/annon_app_v2/static/subsample_wavs"))
+        "static/subsample_wavs"))
     read_audio(random_file)
     today = date.today()
     new_date = today.strftime("%d/%m/%Y")
@@ -206,7 +206,7 @@ def anwser_yes():
 @app.route("/anwser_no")
 def anwser_no():
     random_file = random.choice(os.listdir(
-        "/home/chinlee5/annon_app_v2/static/subsample_wavs"))
+        "static/subsample_wavs"))
     read_audio(random_file)
     today = date.today()
     new_date = today.strftime("%d/%m/%Y")
@@ -220,7 +220,7 @@ def anwser_no():
 @app.route("/anwser_maybe")
 def anwser_maybe():
     random_file = random.choice(os.listdir(
-        "/home/chinlee5/annon_app_v2/static/subsample_wavs"))
+        "static/subsample_wavs"))
     read_audio(random_file)
     today = date.today()
     new_date = today.strftime("%d/%m/%Y")
