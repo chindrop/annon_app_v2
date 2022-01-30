@@ -178,7 +178,11 @@ def plot_spectrogram(signal, f_rate):
 
 @app.route("/annontate_page")
 def annontate_page():
-    random_file = random.choice(os.listdir("static/subsample_wavs"))
+    wavs_available = os.listdir("static/subsample_wavs")
+    if True: # only_show_unannotated
+        got_already = set([row.audio_name for row in Annontate.query.all()])
+        wavs_available = [awav for awav in wavs_available if awav not in got_already]
+    random_file = random.choice(wavs_available)
     read_audio(random_file)
     return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
 
