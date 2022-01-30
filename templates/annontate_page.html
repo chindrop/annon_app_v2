@@ -6,14 +6,14 @@
     <img src="{{url}}" alt="Wave" height="30%" width="60%">
     {% if random_file %}
     <div>
-        <audio controls>
+        <audio controls autoplay="yes">
             <source src="{{ url_for('static', filename='/subsample_wavs/'+ random_file) }}">
         </audio>
     </div>
     <div class="buttons">
-        <a class="btn btn-success" id="yes" href="{{url_for('anwser_yes')}}">Yes</a>
-        <a class="btn btn-danger" id="no" href="{{url_for('anwser_no')}}">No</a>
-        <a class="btn btn-dark" id="maybe" href="{{url_for('anwser_maybe')}}">Not sure</a>
+        <a class="btn btn-success" id="yes" href="{{url_for('anwser_yes')}}" accesskey="a">Yes</a>
+        <a class="btn btn-danger" id="no" href="{{url_for('anwser_no')}}" accesskey="z">No</a>
+        <a class="btn btn-dark" id="maybe" href="{{url_for('anwser_maybe')}}" accesskey="x">Not sure</a>
     </div>
     {% endif %}
 </div>
