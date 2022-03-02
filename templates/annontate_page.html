@@ -11,9 +11,9 @@
         </audio>
     </div>
     <div class="buttons">
-        <a class="btn btn-success" id="yes" href="{{url_for('anwser_yes')}}" accesskey="a">Yes</a>
-        <a class="btn btn-danger" id="no" href="{{url_for('anwser_no')}}" accesskey="z">No</a>
-        <a class="btn btn-dark" id="maybe" href="{{url_for('anwser_maybe')}}" accesskey="x">Not sure</a>
+	    <a class="btn btn-success" id="yes"  href="{{url_for('anwser_yes')}}?filename={{random_file}}" accesskey="a">Yes</a>
+	    <a class="btn btn-danger" id="no"     href="{{url_for('anwser_no')}}?filename={{random_file}}" accesskey="z">No</a>
+	    <a class="btn btn-dark" id="maybe" href="{{url_for('anwser_maybe')}}?filename={{random_file}}" accesskey="x">Not sure</a>
     </div>
     {% endif %}
 </div>

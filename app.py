@@ -176,13 +176,17 @@ def plot_spectrogram(signal, f_rate):
 #    plot_spectrogram(y)
 
 
-@app.route("/annontate_page")
-def annontate_page():
+def get_random_file():
     wavs_available = os.listdir("static/subsample_wavs")
     if True: # only_show_unannotated
         got_already = set([row.audio_name for row in Annontate.query.all()])
         wavs_available = [awav for awav in wavs_available if awav not in got_already]
     random_file = random.choice(wavs_available)
+    return random_file
+
+@app.route("/annontate_page")
+def annontate_page():
+    random_file = get_random_file()
     read_audio(random_file)
     return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
 
@@ -195,44 +199,26 @@ def logout():
 
 @app.route("/anwser_yes")
 def anwser_yes():
-    random_file = random.choice(os.listdir(
-        "static/subsample_wavs"))
-    read_audio(random_file)
-    today = date.today()
-    new_date = today.strftime("%d/%m/%Y")
-    new_annontate = Annontate(
-        data='Yes', date=new_date, user_email=current_user.email, audio_name=random_file)
-    db.session.add(new_annontate)
-    db.session.commit()
-    return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
-
+    store_answer("Yes")
+    return annontate_page()
 
 @app.route("/anwser_no")
 def anwser_no():
-    random_file = random.choice(os.listdir(
-        "static/subsample_wavs"))
-    read_audio(random_file)
-    today = date.today()
-    new_date = today.strftime("%d/%m/%Y")
-    new_annontate = Annontate(
-        data='no', date=new_date, user_email=current_user.email, audio_name=random_file)
-    db.session.add(new_annontate)
-    db.session.commit()
-    return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
-
+    store_answer("no")
+    return annontate_page()
 
 @app.route("/anwser_maybe")
 def anwser_maybe():
-    random_file = random.choice(os.listdir(
-        "static/subsample_wavs"))
-    read_audio(random_file)
+    store_answer("maybe")
+    return annontate_page()
+
+def store_answer(the_answer):
     today = date.today()
     new_date = today.strftime("%d/%m/%Y")
     new_annontate = Annontate(
-        data='maybe', date=new_date, user_email=current_user.email, audio_name=random_file)
+        data=the_answer, date=new_date, user_email=current_user.email, audio_name=request.args.get("filename"))
     db.session.add(new_annontate)
     db.session.commit()
-    return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
 
 
 if __name__ == "__main__":
