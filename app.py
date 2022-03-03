@@ -1,5 +1,6 @@
 import os
 import random
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -13,10 +14,12 @@ import wave
 import os.path
 from datetime import date
 
+load_dotenv()
+
 plt.switch_backend('Agg')
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chinlee5:password@localhost:5432/annontation'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 toastr = Toastr(app)

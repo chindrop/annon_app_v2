@@ -7,3 +7,4 @@ junit/
 .DS_Store
 **/subsample_wavs/
 .idea/*
+.env
