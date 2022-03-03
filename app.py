@@ -13,6 +13,7 @@ import wave
 import os.path
 from datetime import date
 
+plt.switch_backend('Agg')
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chinlee5:password@localhost:5432/annontation'
