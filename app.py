@@ -1,5 +1,6 @@
 import os
 import random
+from flask.cli import FlaskGroup
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +25,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 toastr = Toastr(app)
 cors = CORS(app, resources=r"/*")
+cli = FlaskGroup(app)
 app.secret_key = os.urandom(24)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -227,3 +229,4 @@ def store_answer(the_answer):
 
 if __name__ == "__main__":
     app.run(debug=True)
+    cli()
