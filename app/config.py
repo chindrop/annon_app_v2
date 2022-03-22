@@ -40,3 +40,8 @@ class stageConfig(Config):
 class prodConfig(Config):
     DEBUG = False
     TESTING = False
+    AWS_ACCESS_KEY_ID = getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = getenv('AWS_SECRET_ACCESS_KEY')
+    ACL = 'public-read'
+    FLASKS3_BUCKET_NAME = getenv('FLASKS3_BUCKET_NAME')
+    FLASKS3_REGION = getenv('FLASKS3_REGION') 
