@@ -8,7 +8,7 @@ class Config(object):
     TESTING = False
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = getenv('LOCAL_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = getenv('DATABASE_URI')
     SQLALCHEMY_ENGINE_OPTIONS = {
     'echo': True,
     'pool_size': 10,
