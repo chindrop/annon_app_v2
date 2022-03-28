@@ -8,6 +8,8 @@ services:
     image: "blackbird_image"
     env_file:
       - app/.env
+    environment:
+      - FLASK_CONFIGURATION=${FLASK_CONFIGURATION}
 
   db:
     container_name: "blackbird_postgres"
