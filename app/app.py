@@ -13,8 +13,22 @@ import wave
 import os.path
 from datetime import date
 from models import db, User, Annontate
+import boto3
+
+boto_session = boto3.Session( 
+         aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'), 
+         aws_secret_access_key=os.getenb('AWS_SECRET_ACCESS_KEY')
+         region_name=os.getenv('AWS_REGION')
+         )
+
+s3 = boto_session.resource('s3')
+bucket = s3.Bucket('blackbird-audio-files')
+paginator = bucket.get_paginator('list_objects')
+response_iterator = paginator.paginate(PaginationConfig={'PageSize': 1000})
 
 plt.switch_backend('Agg')
+
+
 def configure_app(application):
     #configurations
     load_dotenv()
@@ -123,6 +137,8 @@ def create_app():
 
 
     def read_audio(random_file):
+        if os.getenv('FLASK_CONFIGURATION') != 'development':
+            audio_list = bucket.list_objects_v2
         raw = wave.open(
             "static/subsample_wavs/" + random_file, "r")
         # Extract Raw Audio from Wav File
