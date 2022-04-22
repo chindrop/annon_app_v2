@@ -1,7 +1,9 @@
-import os
+from os import getenv, urandom
+import io
 import random
+import requests
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, render_template_string
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_toastr import Toastr
@@ -10,28 +12,14 @@ from flask_login import login_user, current_user, logout_user, LoginManager
 import matplotlib.pyplot as plt
 import numpy as np
 import wave
-import os.path
 from datetime import date
 from models import db, User, Annontate
-import boto3
+from s3_helpers import configure_boto
 
-boto_session = boto3.Session( 
-         aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'), 
-         aws_secret_access_key=os.getenb('AWS_SECRET_ACCESS_KEY')
-         region_name=os.getenv('AWS_REGION')
-         )
-
-s3 = boto_session.resource('s3')
-bucket = s3.Bucket('blackbird-audio-files')
-paginator = bucket.get_paginator('list_objects')
-response_iterator = paginator.paginate(PaginationConfig={'PageSize': 1000})
-
-plt.switch_backend('Agg')
-
+load_dotenv()
 
 def configure_app(application):
     #configurations
-    load_dotenv()
     configure = {
         "development": "config.devConfig",
         "production": "config.prodConfig",
@@ -40,7 +28,7 @@ def configure_app(application):
     }
     
     #Determine the configuration file to read using environment variables
-    config_name = os.getenv('FLASK_CONFIGURATION', 'development')
+    config_name = getenv('FLASK_CONFIGURATION', 'development')
     #Read settings as objects
     application.config.from_object(configure[config_name])
     return application.config
@@ -54,13 +42,10 @@ def create_app():
     migrate = Migrate(app, db)
     toastr = Toastr(app)
     cors = CORS(app, resources=r"/*")
-    app.secret_key = os.urandom(24)
+    boto_session, bucket, s3_client = configure_boto()
+    app.secret_key = urandom(24)
     login_manager = LoginManager()
     login_manager.init_app(app)
-
-
-
-    
 
     def __init__(self, email, password, first_name):
         self.first_name = first_name
@@ -74,13 +59,10 @@ def create_app():
         """Return the email address to satisfy Flask-Login's requirements."""
         return self.id
 
-
-
     @login_manager.user_loader
     def load_user(user_id):
         # since the user_id is just the primary key of our user table, use it in the query for the user
         return User.query.get(int(user_id))
-
 
     @app.route("/")
     def home():
@@ -137,18 +119,14 @@ def create_app():
 
 
     def read_audio(random_file):
-        if os.getenv('FLASK_CONFIGURATION') != 'development':
-            audio_list = bucket.list_objects_v2
-        raw = wave.open(
-            "static/subsample_wavs/" + random_file, "r")
-        # Extract Raw Audio from Wav File
-        signal = raw.readframes(-1)
-        signal = np.frombuffer(signal, dtype="int16")
+        wav_file = wave.open(random_file, 'r')
+        signal = wav_file.readframes(-1)
+        signal = np.frombuffer(signal, dtype='int16')
         # gets the frame rate
-        f_rate = raw.getframerate()
+        frame_rate = wav_file.getframerate()
 
-        plot_waveform(signal, f_rate)
-        plot_spectrogram(signal, f_rate)
+        plot_waveform(signal, frame_rate)
+        plot_spectrogram(signal, frame_rate)
 
 
     def plot_waveform(signal, f_rate):
@@ -183,18 +161,21 @@ def create_app():
 
 
     def get_random_file():
-        wavs_available = os.listdir("static/subsample_wavs")
-        if True: # only_show_unannotated
-            got_already = set([row.audio_name for row in Annontate.query.all()])
-            wavs_available = [awav for awav in wavs_available if awav not in got_already]
-        random_file = random.choice(wavs_available)
-        return random_file
+        file_names = [file.key for file in bucket.objects.all()]
+        chosen_file = random.choice(file_names)
+        random_file_link = s3_client.generate_presigned_url(
+            'get_object', ExpiresIn=3600, Params={'Bucket': bucket.name, 'Key': chosen_file})
+        random_file = bucket.Object(chosen_file)
+        random_file = random_file.get()['Body']
+        return random_file_link, random_file
+        
+          
 
     @app.route("/annontate_page")
     def annontate_page():
         random_file = get_random_file()
-        read_audio(random_file)
-        return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file=random_file)
+        read_audio(random_file[1])
+        return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file_link=random_file[0])
 
 
     @app.route("/logout")
