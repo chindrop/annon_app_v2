@@ -16,7 +16,6 @@ services:
     image: postgres
     restart: always
     volumes:
-      - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
       - db-data:/var/lib/postgresql/data
     env_file:
       - app/.env
