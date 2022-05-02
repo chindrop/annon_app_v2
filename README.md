@@ -2,8 +2,9 @@
 Blackbird Annotation Tool is a web application which lets its users to upload, listen, visualise and most importantly **annotate** audio recordings. The main purpose is to provide a way to produce and record metadata for the field recorded bird sounds. So that these can be aggragated with the machine learning applications in the future for scientific purposes. The web application is written in Python 3.10 using Flask 2.0 as framework. It is served as a multi-container Docker application together with a Postgres database and a PGAdmin4 interface. This documentation is aimed for future users and contributers. It consists an explanation to backend architecture.
 
 ### Structure
+```
 .github                      
-   |-- workflows
+-- workflows
    |   |-- blackbirdcicd.yml #github workflows definiton
 .gitignore                   #files to be exempt from git
 Docker-compose.yaml          #container and service definitions for docker-compose
@@ -31,6 +32,7 @@ app                          #source folder for the flask app
    |   |-- login.html
    |   |-- sign_up.html
 upload_files.py             # a standalone script to upload audio files to s3 server
+```
 
 ### Functions & Routes
 Most of the relevant functions for the application are defined in the app.py file. It will be exclusivly implied if it has been defined somewhere else.
