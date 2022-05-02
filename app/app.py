@@ -18,20 +18,22 @@ from s3_helpers import configure_boto
 
 load_dotenv()
 
+
 def configure_app(application):
-    #configurations
+    # configurations
     configure = {
         "development": "config.devConfig",
         "production": "config.prodConfig",
         "staging": "config.stageConfig",
         "testing": "config.testConfig"
     }
-    
-    #Determine the configuration file to read using environment variables
+
+    # Determine the configuration file to read using environment variables
     config_name = getenv('FLASK_CONFIGURATION', 'development')
-    #Read settings as objects
+    # Read settings as objects
     application.config.from_object(configure[config_name])
     return application.config
+
 
 def create_app():
     app = Flask(__name__)
@@ -39,7 +41,7 @@ def create_app():
     db.init_app(app)
     with app.app_context():
         db.create_all()
-    migrate = Migrate(app, db)
+    # migrate = Migrate(app, db)
     toastr = Toastr(app)
     cors = CORS(app, resources=r"/*")
     boto_session, bucket, s3_client = configure_boto()
@@ -68,16 +70,13 @@ def create_app():
     def home():
         return render_template("home.html")
 
-
     @app.route("/signup")
     def signup():
         return render_template("sign_up.html")
 
-
     @app.route("/login")
     def login():
         return render_template("login.html")
-
 
     @app.route('/register', methods=["GET", "POST"])
     def register():
@@ -104,7 +103,6 @@ def create_app():
             flash('Password does not match')
             return redirect(url_for('signup'))
 
-
     @app.route('/login_submit', methods=["GET", "POST"])
     def login_submit():
         email_entered = request.form['email']
@@ -112,11 +110,44 @@ def create_app():
         user = User.query.filter_by(email=email_entered).first()
         if user is not None and check_password_hash(user.password, password_entered):
             login_user(user, remember=True)
-            return redirect(url_for('annontate_page'))
+            return redirect(url_for('annotate_page'))
         else:
             flash('login fail, check your password and email entered', 'warning')
             return render_template('login.html')
 
+    @app.route("/annotate_page")
+    def annotate_page():
+        random_file = get_random_file()
+        read_audio(random_file[1])
+        return render_template('annotate_page.html', url='/static/specto/new_plot.png', random_file_link=random_file[0])
+
+    @app.route("/logout")
+    def logout():
+        logout_user()
+        return render_template('home.html')
+
+    @app.route("/anwser_yes")
+    def anwser_yes():
+        store_answer("Yes")
+        return annotate_page()
+
+    @app.route("/anwser_no")
+    def anwser_no():
+        store_answer("no")
+        return annotate_page()
+
+    @app.route("/anwser_maybe")
+    def anwser_maybe():
+        store_answer("maybe")
+        return annotate_page()
+
+    def store_answer(the_answer):
+        today = date.today()
+        new_date = today.strftime("%d/%m/%Y")
+        new_annontate = Annontate(
+            data=the_answer, date=new_date, user_email=current_user.email, audio_name=request.args.get("filename"))
+        db.session.add(new_annontate)
+        db.session.commit()
 
     def read_audio(random_file):
         wav_file = wave.open(random_file, 'r')
@@ -127,7 +158,6 @@ def create_app():
 
         plot_waveform(signal, frame_rate)
         plot_spectrogram(signal, frame_rate)
-
 
     def plot_waveform(signal, f_rate):
         time = np.linspace(
@@ -141,7 +171,6 @@ def create_app():
         ax.plot(time, signal)
         fig.savefig('static/images/new_plot.png')
 
-
     def plot_spectrogram(signal, f_rate):
         time = np.linspace(
             0,  # start
@@ -153,12 +182,9 @@ def create_app():
         ax.specgram(signal, Fs=f_rate)
         fig.savefig('static/specto/new_plot.png')
 
-
-
     # def visualize(random_file):
     #    y=read_audio(random_file)
     #    plot_spectrogram(y)
-
 
     def get_random_file():
         file_names = [file.key for file in bucket.objects.all()]
@@ -168,49 +194,11 @@ def create_app():
         random_file = bucket.Object(chosen_file)
         random_file = random_file.get()['Body']
         return random_file_link, random_file
-        
-          
 
-    @app.route("/annontate_page")
-    def annontate_page():
-        random_file = get_random_file()
-        read_audio(random_file[1])
-        return render_template('annontate_page.html', url='/static/specto/new_plot.png', random_file_link=random_file[0])
+    return app
 
-
-    @app.route("/logout")
-    def logout():
-        logout_user()
-        return render_template('home.html')
-
-
-    @app.route("/anwser_yes")
-    def anwser_yes():
-        store_answer("Yes")
-        return annontate_page()
-
-    @app.route("/anwser_no")
-    def anwser_no():
-        store_answer("no")
-        return annontate_page()
-
-    @app.route("/anwser_maybe")
-    def anwser_maybe():
-        store_answer("maybe")
-        return annontate_page()
-
-    def store_answer(the_answer):
-        today = date.today()
-        new_date = today.strftime("%d/%m/%Y")
-        new_annontate = Annontate(
-            data=the_answer, date=new_date, user_email=current_user.email, audio_name=request.args.get("filename"))
-        db.session.add(new_annontate)
-        db.session.commit()
-
-    return app 
 
 blackbird = create_app()
 
 if __name__ == "__main__":
     blackbird.run()
-    
