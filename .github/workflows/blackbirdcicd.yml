@@ -1,0 +1,55 @@
+#NAME
+name: Push images to Dockerhub and deploy on ELastic Beanstalk
+#EVENT
+on:
+ push:
+  branches:
+   - master
+#JOBS
+jobs:
+ build_docker_images:
+  name: build docker images
+  runs-on: [ubuntu-latest]
+  steps:
+   - name: checkout
+     uses: actions/checkout@v3
+     
+   - name: Docker Login
+  uses: docker/login-action@v1.8.0
+  with:
+   username: ${{secrets.DOCKERHUB_USERNAME}}
+   password: ${{secrets.DOCKERHUB_TOKEN}}
+   logout: true
+   - name: Build Flask image
+    run: docker build -t canturgay/blackbird_image -f
+             ./Server/Dockerfile ./Server
+   - name: Tag Flask Image
+    run: docker tag canturgay/blackbird_image 
+             canturgay/blackbird_image:latest
+   - name: Push Flask image to Dockerhub
+    run: docker push canturgay/blackbird_image
+   - name: Build Postgres image
+    run: docker build -t canturgay/postgres -f
+             ./Server/Dockerfile ./Server
+   - name: Tag Postgres Image
+    run: docker tag canturgay/postgres 
+             canturgay/postgres:latest
+   - name: Push Postgres image to Dockerhub
+    run: docker push canturgay/postgres
+   - name: Build pgadmin4 image
+    run: docker build -t canturgay/pgadmin4 -f
+             ./Server/Dockerfile ./Server
+   - name: Tag pgadmin4 Image
+    run: docker tag canturgay/pgadmin4 
+             canturgay/blackbird_image:latest
+   - name: Push pgadmin4 image to Dockerhub
+    run: docker push canturgay/pgadmin4
+    - name: Deploy to EB
+    uses: einaregilsson/beanstalk-deploy@v14
+    with:
+    aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+    aws_secret_key: ${{ secrets.AWS_ACCESS_SECRET_KEY }}
+    application_name: blackbird-application
+    environment_name: Blackbirdannotation-env
+    version_label: "app-cbe0-210131_121135"
+    region: eu-central-1

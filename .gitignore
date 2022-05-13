@@ -1,4 +1,4 @@
-venv/*
+**/venv/
 .vscode/*
 __pycache__/
 .pytest_cache/
@@ -8,3 +8,12 @@ junit/
 **/subsample_wavs/
 .idea/*
 .env
+app/venv
+app/migrations
+app/oldrequirements.txt
+**/migrartions/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+

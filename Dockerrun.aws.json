@@ -1,0 +1,85 @@
+{
+    "AWSDockerrunVersion": "3",
+    "containerDefinitions": [
+        {
+            "name": "blackbird_flask",
+            "image": "canturgay/blackbird_image",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 5000,
+                    "hostPort": 5000
+                }
+            ],
+            "env_file": [
+                "./app/.env"
+            ],
+            "environment": [
+                {
+                    "name": "FLASK_CONFIGURATION",
+                    "value": "Production"
+                }
+            ]
+        },
+        {
+            "name": "db",
+            "image": "postgres:9.6",
+            "restart": "always",
+            "volumes": [
+                {
+                    "host": {
+                        "sourcePath": "/var/lib/postgresql/data"
+                    },
+                    "name": "db-data"
+                }
+            ],
+            "env_file": [
+                "./app/.env"
+            ],
+            "ports": [
+                {
+                    "containerPort": 5432,
+                    "hostPort": 5432
+                }
+            ]
+        },
+        {
+            "name": "pgadmin",
+            "image": "dpage/pgadmin4:6.7",
+            "env_file": [
+                "./app/.env"
+            ],
+            "ports": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 80
+                }
+            ],
+            "volumes": [
+                {
+                    "host": {
+                        "sourcePath": "/var/lib/pgadmin"
+                    },
+                    "name": "pgadmin-data"
+                }
+            ],
+            "depends_on": [
+                "db"
+            ]
+        }
+    ],
+    "volumes": [
+        {
+            "name": "db-data",
+            "host": {
+                "sourcePath": "/var/lib/postgresql/data"
+            }
+        },
+        {
+            "name": "pgadmin-data",
+            "host": {
+                "sourcePath": "/var/lib/pgadmin"
+            }
+        }
+    ]
+}

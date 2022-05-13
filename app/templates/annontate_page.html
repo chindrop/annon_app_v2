@@ -4,10 +4,9 @@
 <div class="container">
     <h4> Annontation Page</h4>
     <img src="{{url}}" alt="Wave" height="30%" width="60%">
-    {% if random_file %}
     <div>
         <audio controls autoplay="yes">
-            <source src="{{ url_for('static', filename='/subsample_wavs/'+ random_file) }}">
+            <source src="{{ random_file_link }}">
         </audio>
     </div>
     <div class="buttons">
@@ -15,6 +14,5 @@
 	    <a class="btn btn-danger" id="no"     href="{{url_for('anwser_no')}}?filename={{random_file}}" accesskey="z">No</a>
 	    <a class="btn btn-dark" id="maybe" href="{{url_for('anwser_maybe')}}?filename={{random_file}}" accesskey="x">Not sure</a>
     </div>
-    {% endif %}
 </div>
 {%endblock%}
